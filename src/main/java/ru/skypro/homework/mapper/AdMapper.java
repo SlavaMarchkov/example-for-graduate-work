@@ -1,7 +1,7 @@
 package ru.skypro.homework.mapper;
 
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.skypro.homework.dto.AdDto;
 import ru.skypro.homework.dto.AdsDto;
@@ -10,14 +10,23 @@ import ru.skypro.homework.entity.Ad;
 import ru.skypro.homework.exception.UserNotFoundException;
 import ru.skypro.homework.repository.UserRepository;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
 @Component
-@AllArgsConstructor
 public class AdMapper {
 
     private final UserRepository userRepository;
+    private final String imagePath;
+
+    public AdMapper(final UserRepository userRepository,
+                    @Value("${path.to.images.folder}") String pathToImagesDir,
+                    @Value("${directory.separator}") String directorySeparator) {
+        this.userRepository = userRepository;
+        Path pathToImages = Path.of(pathToImagesDir);
+        this.imagePath = directorySeparator + pathToImages + directorySeparator;
+    }
 
     public ExtendedAdDto toExtendedDto(@NonNull Ad ad) {
         ExtendedAdDto adDto = new ExtendedAdDto();
@@ -26,11 +35,13 @@ public class AdMapper {
         adDto.setTitle(ad.getTitle());
         adDto.setDescription(ad.getDescription());
         adDto.setPrice(ad.getPrice());
-        adDto.setImage(ad.getImage());
         adDto.setAuthorFirstName(ad.getAuthor().getFirstName());
         adDto.setAuthorLastName(ad.getAuthor().getLastName());
         adDto.setEmail(ad.getAuthor().getEmail());
         adDto.setPhone(ad.getAuthor().getPhone());
+
+        Optional.ofNullable(ad.getImage())
+                .ifPresent(elem -> adDto.setImage(imagePath + ad.getImage()));
 
         return adDto;
     }
@@ -41,8 +52,10 @@ public class AdMapper {
         adDto.setPk(ad.getPk());
         adDto.setTitle(ad.getTitle());
         adDto.setPrice(ad.getPrice());
-        adDto.setImage(ad.getImage());
         adDto.setAuthor(ad.getAuthor().getId());
+
+        Optional.ofNullable(ad.getImage())
+                .ifPresent(elem -> adDto.setImage(imagePath + ad.getImage()));
 
         return adDto;
     }

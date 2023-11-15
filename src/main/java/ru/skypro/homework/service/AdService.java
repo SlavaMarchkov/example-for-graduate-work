@@ -7,10 +7,12 @@ import ru.skypro.homework.dto.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.entity.User;
 
+import java.io.IOException;
+
 public interface AdService {
     User getCurrentUser();
 
-    AdDto create(CreateOrUpdateAdDto ad);
+    AdDto create(CreateOrUpdateAdDto ad, MultipartFile file);
 
     ExtendedAdDto get(Integer id);
 
@@ -25,4 +27,6 @@ public interface AdService {
     AdDto findAdById(Integer id);
 
     String updateImage(Integer id, MultipartFile file);
+
+    byte[] getImage(String image) throws IOException;
 }

@@ -1,6 +1,9 @@
 package ru.skypro.homework.controller;
 
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,16 +16,22 @@ import ru.skypro.homework.dto.UserDto;
 import ru.skypro.homework.service.UserService;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @RestController
-@RequestMapping("users")
+@RequestMapping("/users")
 @CrossOrigin(value = "http://localhost:3000")
 public class UserController {
 
     private final UserService service;
+    private final String avatarPath;
 
-    public UserController(final UserService service) {
+    public UserController(final UserService service,
+                          @Value("${path.to.avatars.folder}") String avatarsDir,
+                          @Value("${directory.separator}") String directorySeparator) {
         this.service = service;
+        this.avatarPath = avatarsDir + directorySeparator;
     }
 
     @PostMapping("/set_password") // POST http://localhost:8080/users/set_password
@@ -48,11 +57,16 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    @PatchMapping(value = "/me/image",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // PATCH http://localhost:8080/users/me/image
-    public ResponseEntity<String> updateAvatar(@RequestParam MultipartFile image) throws IOException {
-        service.updateAvatar(image);
-        return ResponseEntity.ok().build();
+    @PatchMapping(
+            path = "/me/image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
+    )
+    public ResponseEntity<Resource> updateAvatar(@RequestParam MultipartFile image) throws IOException {
+        String fileName = service.updateAvatar(image);
+        return (fileName != null)
+                ? ResponseEntity.ok().body(new ByteArrayResource(Files.readAllBytes(Paths.get(avatarPath + fileName))))
+                : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
 }
