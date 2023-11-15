@@ -120,6 +120,7 @@ public class CommentServiceImpl implements CommentService {
                     .findCommentByAd_PkAndPk(adId, commentId)
                     .map(oldComment -> {
                         oldComment.setText(comment.getText());
+                        oldComment.setCreatedAt(System.currentTimeMillis());
                         return commentMapper.toDto(commentRepository.save(oldComment));
                     })
                     .orElse(null);

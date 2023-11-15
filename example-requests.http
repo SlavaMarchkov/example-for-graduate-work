@@ -2,10 +2,18 @@
 GET http://localhost:8080/ads
 Content-Type: application/json
 
+### Get avatar
+GET http://localhost:8080/avatars/2ea146a6-55be-4aed-867a-6441e42edda7.jpg
+Content-Type: application/octet-stream
+
+### Get image for ad
+GET http://localhost:8080/images/12
+Content-Type: application/octet-stream
+
 ### Create a new ad
 POST http://localhost:8080/ads
 Content-Type: multipart/form-data; boundary=WebAppBoundary
-Authorization: Basic user7@gmail.com user7@gmail.com
+Authorization: Basic user2@gmail.com user2@gmail.com
 
 --WebAppBoundary
 Content-Disposition: form-data; name="properties"
@@ -24,14 +32,14 @@ Content-Type: image/jpeg
 < mto.jpg
 
 ### Get ad by id
-GET http://localhost:8080/ads/23
+GET http://localhost:8080/ads/24
 Content-Type: application/json
 Authorization: Basic user2@gmail.com user2@gmail.com
 
 ### Delete ad by id
 DELETE http://localhost:8080/ads/12
 Content-Type: application/json
-Authorization: Basic user2@gmail.com user2@gmail.com
+Authorization: Basic user4@gmail.com user4@gmail.com
 
 ### Update ad by id
 PATCH http://localhost:8080/ads/12
@@ -50,9 +58,9 @@ Content-Type: application/json
 Authorization: Basic user4@gmail.com user4@gmail.com
 
 ### Update an image for ad
-PATCH http://localhost:8080/ads/1/image
+PATCH http://localhost:8080/ads/27/image
 Content-Type: multipart/form-data; boundary=WebAppBoundary
-Authorization: Basic user@gmail.com password
+Authorization: Basic user2@gmail.com user2@gmail.com
 
 --WebAppBoundary
 Content-Disposition: form-data; name="image"; filename="mto.jpg"
@@ -113,7 +121,7 @@ Content-Type: application/json
 ### Get details of an authenticated user
 GET http://localhost:8080/users/me
 Content-Type: application/json
-Authorization: Basic user7@gmail.com user7@gmail.com
+Authorization: Basic user5@gmail.com user5@gmail.com
 
 ### Update details of an authenticated user
 PATCH http://localhost:8080/users/me
@@ -139,7 +147,7 @@ Authorization: Basic user7@gmail.com user7@gmail.com
 ### Update an avatar for an authenticated user
 PATCH http://localhost:8080/users/me/image
 Content-Type: multipart/form-data; boundary=WebAppBoundary
-Authorization: Basic user2@gmail.com user2@gmail.com
+Authorization: Basic user5@gmail.com user5@gmail.com
 
 --WebAppBoundary
 Content-Disposition: form-data; name="image"; filename="mto.jpg"

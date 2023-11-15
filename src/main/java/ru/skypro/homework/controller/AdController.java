@@ -1,6 +1,6 @@
 package ru.skypro.homework.controller;
 
-import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -21,21 +21,31 @@ import java.nio.file.Paths;
 @RestController
 @RequestMapping(path = "/ads")
 @CrossOrigin(value = "http://localhost:3000")
-@AllArgsConstructor
 public class AdController {
 
     private final AdService service;
+    private final String imagePath;
+
+    public AdController(final AdService service,
+                        @Value("${path.to.images.folder}") String imagesDir,
+                        @Value("${directory.separator}") String directorySeparator) {
+        this.service = service;
+        this.imagePath = imagesDir + directorySeparator;
+    }
 
     @GetMapping
     public ResponseEntity<AdsDto> getAllAds() {
-        return ResponseEntity.ok(service.getAll());
+        return ResponseEntity.ok(
+                service.getAll()
+        );
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AdDto> addAd(@RequestPart(name = "properties") CreateOrUpdateAdDto ad,
                                        @RequestPart(name = "image") MultipartFile file) {
-        AdDto addedAd = service.create(ad);
-        return ResponseEntity.ok(addedAd);
+        return ResponseEntity.ok(
+                service.create(ad, file)
+        );
     }
 
     @GetMapping(path = "/{id}")
@@ -88,7 +98,7 @@ public class AdController {
         } else {
             String fileName = service.updateImage(id, file);
             return (fileName != null)
-                    ? ResponseEntity.ok().body(new ByteArrayResource(Files.readAllBytes(Paths.get(fileName))))
+                    ? ResponseEntity.ok().body(new ByteArrayResource(Files.readAllBytes(Paths.get(imagePath + fileName))))
                     : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }

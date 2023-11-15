@@ -1,6 +1,7 @@
 package ru.skypro.homework.service.impl;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -58,6 +60,13 @@ public class UserServiceImpl implements UserService {
         return false;
     }
 
+    @Override
+    public byte[] getAvatar(final String path) throws IOException {
+        return new ByteArrayResource(Files
+                .readAllBytes(Paths.get(path))
+        ).getByteArray();
+    }
+
     private void setNewPassword(final String email, final String password) {
         String encodedPassword = encoder.encode(password);
         User user = repository.findByEmail(email);
@@ -85,7 +94,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateAvatar(final MultipartFile file) {
+    public String updateAvatar(final MultipartFile file) {
         UserDto userDto = this.getAuthenticatedUser();
         try {
             String extension = getExtensions(Objects.requireNonNull(file.getOriginalFilename()));
@@ -95,17 +104,18 @@ public class UserServiceImpl implements UserService {
             writeToFile(pathToAvatar, data);
 
             String avatar = userDto.getImage();
-
             if (avatar != null) {
-                Files.delete(Path.of(avatar));
+                Files.delete(Path.of(avatar.substring(1)));
             }
 
             repository
                     .findById(userDto.getId())
                     .map(user -> {
-                        user.setImage(pathToAvatar.toString());
+                        user.setImage(fileName);
                         return mapper.toDto(repository.save(user));
                     });
+
+            return fileName;
         } catch (IOException e) {
             throw new UserAvatarProcessingException();
         }
