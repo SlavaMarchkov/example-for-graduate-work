@@ -7,6 +7,9 @@ import ru.skypro.homework.service.AdService;
 
 import java.io.IOException;
 
+/**
+ * Контроллер для обработки запросов для изображений объявлений
+ */
 @RestController
 @RequestMapping(path = "/images")
 @CrossOrigin(value = "http://localhost:3000")

@@ -14,11 +14,15 @@ import ru.skypro.homework.dto.NewPasswordDto;
 import ru.skypro.homework.dto.UpdateUserDto;
 import ru.skypro.homework.dto.UserDto;
 import ru.skypro.homework.service.UserService;
+import ru.skypro.homework.service.impl.UserServiceImpl;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+/**
+ * Контроллер для обработки запросов для пользователей
+ */
 @RestController
 @RequestMapping("/users")
 @CrossOrigin(value = "http://localhost:3000")
@@ -34,6 +38,13 @@ public class UserController {
         this.avatarPath = avatarsDir + directorySeparator;
     }
 
+    /**
+     * Установка нового пароля
+     * <br>Используется метод сервиса {@link ru.skypro.homework.service.impl.UserServiceImpl#updatePassword}
+     * @param newPassword      NewPasswordDto
+     * @param authentication   Authentication
+     * @return String
+     */
     @PostMapping("/set_password") // POST http://localhost:8080/users/set_password
     public ResponseEntity<String> setPassword(@RequestBody NewPasswordDto newPassword,
                                               @NonNull Authentication authentication) {
@@ -46,17 +57,35 @@ public class UserController {
         }
     }
 
+    /**
+     * Получение авторизованного пользователя
+     * <br>Используется метод сервиса {@link UserServiceImpl#getAuthenticatedUser()}
+     * @return UserDto
+     */
     @GetMapping("/me") // GET http://localhost:8080/users/me
     public ResponseEntity<UserDto> getUser() {
         return ResponseEntity.ok(service.getAuthenticatedUser());
     }
 
+    /**
+     * Обновление данных пользователя
+     * <br>Используется метод сервиса {@link ru.skypro.homework.service.impl.UserServiceImpl#updateUser}
+     * @param updateUserDto UpdateUserDto
+     * @return UpdateUserDto
+     */
     @PatchMapping("/me") // PATCH http://localhost:8080/users/me
     public ResponseEntity<UpdateUserDto> updateUser(@RequestBody UpdateUserDto updateUserDto) {
         UpdateUserDto updatedUser = service.updateUser(updateUserDto);
         return ResponseEntity.ok(updatedUser);
     }
 
+    /**
+     * Обновление аватара пользователя
+     * <br>Используется метод сервиса {@link ru.skypro.homework.service.impl.UserServiceImpl#updateAvatar}
+     * @param image MultipartFile
+     * @return Resource
+     * @throws IOException
+     */
     @PatchMapping(
             path = "/me/image",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,

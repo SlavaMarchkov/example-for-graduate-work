@@ -9,6 +9,9 @@ import ru.skypro.homework.service.RegisterService;
 
 import java.util.regex.Pattern;
 
+/**
+ * Сервис отвечающий за авторизацию пользователя
+ */
 @Service
 public class RegisterServiceImpl implements RegisterService {
 
@@ -22,6 +25,13 @@ public class RegisterServiceImpl implements RegisterService {
         this.userRepository = userRepository;
     }
 
+    /**
+     * Метод, который сохраняет в базу данных нового пользователя
+     * <br> Используется метод сервиса {@link RegisterServiceImpl#validateRegister}
+     * <br> Также Используется класс PasswordEncoder, нужен для выполнения одностороннего преобразования пароля, обеспечивающего безопасное хранение пароля
+     * @param register
+     * @return
+     */
     @Override
     public boolean registerUser(RegisterDto register) {
         User foundUser = userRepository.findByEmail(register.getUsername());
@@ -43,6 +53,11 @@ public class RegisterServiceImpl implements RegisterService {
         return true;
     }
 
+    /**
+     * Метод, который проверяет что данные были переданы корректно
+     * @param register
+     * @return
+     */
     public boolean validateRegister(RegisterDto register) {
         Pattern pattern = Pattern.compile(PHONE_NUMBER_PATTERN);
         boolean matcher = pattern.matcher(register.getPhone()).matches();

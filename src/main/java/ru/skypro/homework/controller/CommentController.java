@@ -10,6 +10,9 @@ import ru.skypro.homework.dto.CreateOrUpdateCommentDto;
 import ru.skypro.homework.service.AdService;
 import ru.skypro.homework.service.CommentService;
 
+/**
+ * Контроллер для обработки запросов для комментариев
+ */
 @RestController
 @RequestMapping(path = "/ads")
 @CrossOrigin(value = "http://localhost:3000")
@@ -25,7 +28,7 @@ public class CommentController {
 
     /**
      * Получение всех комментариев объявления для авторизованного пользователя
-     *
+     * <br>Используется метод сервиса {@link ru.skypro.homework.service.impl.CommentServiceImpl#getComments}
      * @param adId Integer
      * @return CommentsDto
      */
@@ -42,7 +45,7 @@ public class CommentController {
 
     /**
      * Добавление комментария к объявлению
-     *
+     * <br>Используется метод сервиса {@link ru.skypro.homework.service.impl.CommentServiceImpl#addComment}
      * @param adId    Integer
      * @param comment CreateOrUpdateCommentDto
      * @return CommentDto
@@ -61,7 +64,7 @@ public class CommentController {
 
     /**
      * Удаление комментария по ID объявления и ID комментария для авторизованного пользователя
-     *
+     *<br>Используется метод сервиса {@link ru.skypro.homework.service.impl.CommentServiceImpl#deleteComment}
      * @param adId      Integer
      * @param commentId Integer
      * @return Void (статус 200 OK)
@@ -81,7 +84,7 @@ public class CommentController {
 
     /**
      * Обновление комментария
-     *
+     *<br>Используется метод сервиса {@link ru.skypro.homework.service.impl.CommentServiceImpl#updateComment}
      * @param adId      Integer
      * @param commentId Integer
      * @param comment   CreateOrUpdateCommentDto

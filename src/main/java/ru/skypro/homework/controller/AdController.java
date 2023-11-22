@@ -13,16 +13,19 @@ import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.service.AdService;
+import ru.skypro.homework.service.impl.AdServiceImpl;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+/**
+ * Контроллер для обработки запросов для объявлений
+ */
 @RestController
 @RequestMapping(path = "/ads")
 @CrossOrigin(value = "http://localhost:3000")
 public class AdController {
-
     private final AdService service;
     private final String imagePath;
 
@@ -33,6 +36,11 @@ public class AdController {
         this.imagePath = imagesDir + directorySeparator;
     }
 
+    /**
+     * Вывод всех объявлений.
+     * <br>Используется метод сервиса {@link AdServiceImpl#getAll()}
+     * @return AdsDto
+     */
     @GetMapping
     public ResponseEntity<AdsDto> getAllAds() {
         return ResponseEntity.ok(
@@ -40,6 +48,13 @@ public class AdController {
         );
     }
 
+    /**
+     * Добавления нового объявления авторизованным пользователем
+     * <br>Используется метод сервиса {@link AdServiceImpl#create}
+     * @param ad    CreateOrUpdateAdDto
+     * @param file  MultipartFile
+     * @return AdDto
+     */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AdDto> addAd(@RequestPart(name = "properties") CreateOrUpdateAdDto ad,
                                        @RequestPart(name = "image") MultipartFile file) {
@@ -48,6 +63,12 @@ public class AdController {
         );
     }
 
+    /**
+     * Вывод объявления по идентификатору
+     * Используется метод сервиса {@link AdServiceImpl#get}
+     * @param id Integer
+     * @return ExtendedAdDto
+     */
     @GetMapping(path = "/{id}")
     public ResponseEntity<ExtendedAdDto> getAdById(@PathVariable(value = "id") Integer id) {
         ExtendedAdDto ad = service.get(id);
@@ -56,6 +77,12 @@ public class AdController {
                 : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
+    /**
+     * Удаление объявления по идентификатору
+     * <br>Используется метод сервиса {@link AdServiceImpl#delete}
+     * @param id Integer
+     * @return Void (статус 200 OK)
+     */
     @DeleteMapping(path = "/{id}")
     public ResponseEntity<Void> deleteAdById(@PathVariable(value = "id") Integer id) {
         AdDto ad = service.findAdById(id);
@@ -66,6 +93,13 @@ public class AdController {
                 : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
     }
 
+    /**
+     * Обновление объявления по идентификатору
+     * <br>Используется метод сервиса {@link AdServiceImpl#update}
+     * @param id  Integer
+     * @param ad  CreateOrUpdateAdDto
+     * @return AdDto
+     */
     @PatchMapping(path = "/{id}")
     public ResponseEntity<AdDto> updateAdById(@PathVariable(value = "id") Integer id,
                                               @RequestBody CreateOrUpdateAdDto ad) {
@@ -80,11 +114,23 @@ public class AdController {
         }
     }
 
+    /**
+     * Получение объявлений авторизованного пользователя.
+     * <br>Используется метод сервиса {@link AdServiceImpl#getAuthorizedUserAds}
+     * @return AdsDto
+     */
     @GetMapping(path = "/me")
     public ResponseEntity<AdsDto> getAuthorizedUserAds() {
         return ResponseEntity.ok(service.getAuthorizedUserAds());
     }
 
+    /**
+     * Обновление фотографий объявления
+     * <br>Используется метод сервиса {@link AdServiceImpl#updateImage}
+     * @param id     Integer
+     * @param file   MultipartFile
+     * @return Resource
+     */
     @PatchMapping(
             path = "/{id}/image",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
