@@ -15,5 +15,5 @@ public interface UserService {
 
     boolean updatePassword(String email, String currentPassword, String newPassword);
 
-    byte[] getAvatar(String path) throws IOException;
+    byte[] getAvatar(String fileName) throws IOException;
 }

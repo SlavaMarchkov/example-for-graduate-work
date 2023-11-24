@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.skypro.homework.dto.*;
 import ru.skypro.homework.entity.Ad;
 import ru.skypro.homework.entity.Comment;
@@ -22,7 +23,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -35,21 +35,21 @@ public class AdServiceImpl implements AdService {
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
     private final AdMapper mapper;
-    private final Path pathToImagesDir;
-    private final String pathToImagesDirWithSlash;
+    private final String pathToImagesDir;
 
     public AdServiceImpl(final AdRepository adRepository,
                          final UserRepository userRepository,
                          final CommentRepository commentRepository,
                          final AdMapper mapper,
-                         @Value("${path.to.images.folder}") String pathToImagesDir,
-                         @Value("${directory.separator}") String directorySeparator) {
+                         @Value("${path.to.images.folder}") String pathToImagesDir) {
         this.adRepository = adRepository;
         this.userRepository = userRepository;
         this.commentRepository = commentRepository;
         this.mapper = mapper;
-        this.pathToImagesDir = Path.of(pathToImagesDir);
-        this.pathToImagesDirWithSlash = pathToImagesDir + directorySeparator;
+        this.pathToImagesDir = UriComponentsBuilder.newInstance()
+                .path(pathToImagesDir + "/")
+                .build()
+                .toUriString();
     }
 
     @Override
@@ -139,7 +139,8 @@ public class AdServiceImpl implements AdService {
             String image = adDto.getImage();
             if (image != null) {
                 try {
-                    Files.delete(Path.of(image.substring(1)));
+                    Path path = Path.of(image.substring(1));
+                    Files.delete(path);
                 } catch (IOException e) {
                     throw new AdImageProcessingException();
                 }
@@ -160,10 +161,10 @@ public class AdServiceImpl implements AdService {
     }
 
     @Override
-    public byte[] getImage(final String image) throws IOException {
-        Path fullPathToImage = Paths.get(pathToImagesDirWithSlash + image);
+    public byte[] getImage(final String fileName) throws IOException {
+        Path path = Path.of(pathToImagesDir, fileName);
         return new ByteArrayResource(Files
-                .readAllBytes(fullPathToImage)
+                .readAllBytes(path)
         ).getByteArray();
     }
 
@@ -175,13 +176,13 @@ public class AdServiceImpl implements AdService {
                 String extension = getExtensions(Objects.requireNonNull(file.getOriginalFilename()));
                 byte[] data = file.getBytes();
                 String fileName = UUID.randomUUID() + "." + extension;
-                Path pathToImage = pathToImagesDir.resolve(fileName);
+                Path pathToImage = Path.of(pathToImagesDir, fileName);
                 writeToFile(pathToImage, data);
 
                 String image = adDto.getImage();
-
                 if (image != null) {
-                    Files.delete(Path.of(image.substring(1)));
+                    Path path = Path.of(image.substring(1));
+                    Files.delete(path);
                 }
 
                 adRepository
@@ -202,7 +203,7 @@ public class AdServiceImpl implements AdService {
         try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
             fos.write(data);
         } catch (IOException e) {
-             throw new AdImageProcessingException();
+            throw new AdImageProcessingException();
         }
     }
 

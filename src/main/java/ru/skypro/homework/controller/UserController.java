@@ -1,9 +1,6 @@
 package ru.skypro.homework.controller;
 
 import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +13,6 @@ import ru.skypro.homework.dto.UserDto;
 import ru.skypro.homework.service.UserService;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/users")
@@ -25,13 +20,9 @@ import java.nio.file.Paths;
 public class UserController {
 
     private final UserService service;
-    private final String avatarPath;
 
-    public UserController(final UserService service,
-                          @Value("${path.to.avatars.folder}") String avatarsDir,
-                          @Value("${directory.separator}") String directorySeparator) {
+    public UserController(final UserService service) {
         this.service = service;
-        this.avatarPath = avatarsDir + directorySeparator;
     }
 
     @PostMapping("/set_password") // POST http://localhost:8080/users/set_password
@@ -62,11 +53,14 @@ public class UserController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
     )
-    public ResponseEntity<Resource> updateAvatar(@RequestParam MultipartFile image) throws IOException {
+    public ResponseEntity<byte[]> updateAvatar(@RequestParam MultipartFile image) throws IOException {
         String fileName = service.updateAvatar(image);
-        return (fileName != null)
-                ? ResponseEntity.ok().body(new ByteArrayResource(Files.readAllBytes(Paths.get(avatarPath + fileName))))
-                : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (fileName != null) {
+            byte[] avatar = service.getAvatar(fileName);
+            return ResponseEntity.ok().body(avatar);
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 
 }
