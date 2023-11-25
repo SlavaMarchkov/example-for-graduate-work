@@ -15,7 +15,7 @@ import ru.skypro.homework.service.UserService;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("users")
+@RequestMapping("/users")
 @CrossOrigin(value = "http://localhost:3000")
 public class UserController {
 
@@ -48,11 +48,19 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
 
-    @PatchMapping(value = "/me/image",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE) // PATCH http://localhost:8080/users/me/image
-    public ResponseEntity<String> updateAvatar(@RequestParam MultipartFile image) throws IOException {
-        service.updateAvatar(image);
-        return ResponseEntity.ok().build();
+    @PatchMapping(
+            path = "/me/image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
+    )
+    public ResponseEntity<byte[]> updateAvatar(@RequestParam MultipartFile image) throws IOException {
+        String fileName = service.updateAvatar(image);
+        if (fileName != null) {
+            byte[] avatar = service.getAvatar(fileName);
+            return ResponseEntity.ok().body(avatar);
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
     }
 
 }

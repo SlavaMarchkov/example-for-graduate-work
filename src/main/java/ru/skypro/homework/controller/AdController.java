@@ -1,8 +1,5 @@
 package ru.skypro.homework.controller;
 
-import lombok.AllArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -15,27 +12,31 @@ import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.service.AdService;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 @RestController
 @RequestMapping(path = "/ads")
 @CrossOrigin(value = "http://localhost:3000")
-@AllArgsConstructor
 public class AdController {
 
     private final AdService service;
 
+    public AdController(final AdService service) {
+        this.service = service;
+    }
+
     @GetMapping
     public ResponseEntity<AdsDto> getAllAds() {
-        return ResponseEntity.ok(service.getAll());
+        return ResponseEntity.ok(
+                service.getAll()
+        );
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<AdDto> addAd(@RequestPart(name = "properties") CreateOrUpdateAdDto ad,
                                        @RequestPart(name = "image") MultipartFile file) {
-        AdDto addedAd = service.create(ad);
-        return ResponseEntity.ok(addedAd);
+        return ResponseEntity.ok(
+                service.create(ad, file)
+        );
     }
 
     @GetMapping(path = "/{id}")
@@ -80,16 +81,19 @@ public class AdController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
     )
-    public ResponseEntity<Resource> updateImageByAdId(@PathVariable(value = "id") Integer id,
+    public ResponseEntity<byte[]> updateImageByAdId(@PathVariable(value = "id") Integer id,
                                                       @RequestPart(name = "image") MultipartFile file) throws IOException {
         AdDto adDto = service.findAdById(id);
         if (adDto == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } else {
             String fileName = service.updateImage(id, file);
-            return (fileName != null)
-                    ? ResponseEntity.ok().body(new ByteArrayResource(Files.readAllBytes(Paths.get(fileName))))
-                    : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            if (fileName != null) {
+                byte[] image = service.getImage(fileName);
+                return ResponseEntity.ok().body(image);
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
         }
     }
 

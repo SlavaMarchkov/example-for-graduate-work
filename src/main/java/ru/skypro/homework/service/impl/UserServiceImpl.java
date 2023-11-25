@@ -1,12 +1,14 @@
 package ru.skypro.homework.service.impl;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.skypro.homework.dto.UpdateUserDto;
 import ru.skypro.homework.dto.UserDto;
 import ru.skypro.homework.entity.User;
@@ -28,7 +30,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private final UserMapper mapper;
     private final PasswordEncoder encoder;
-    private final Path pathToAvatarsDir;
+    private final String fullAvatarPath;
 
     public UserServiceImpl(final UserRepository repository,
                            final UserMapper mapper,
@@ -37,8 +39,12 @@ public class UserServiceImpl implements UserService {
         this.repository = repository;
         this.mapper = mapper;
         this.encoder = encoder;
-        this.pathToAvatarsDir = Path.of(pathToAvatarsDir);
+        this.fullAvatarPath = UriComponentsBuilder.newInstance()
+                .path(pathToAvatarsDir + "/")
+                .build()
+                .toUriString();
     }
+
 
     @Override
     public UserDto getAuthenticatedUser() {
@@ -56,6 +62,14 @@ public class UserServiceImpl implements UserService {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public byte[] getAvatar(final String fileName) throws IOException {
+        Path path = Path.of(fullAvatarPath, fileName);
+        return new ByteArrayResource(Files
+                .readAllBytes(path)
+        ).getByteArray();
     }
 
     private void setNewPassword(final String email, final String password) {
@@ -85,27 +99,29 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateAvatar(final MultipartFile file) {
+    public String updateAvatar(final MultipartFile file) {
         UserDto userDto = this.getAuthenticatedUser();
         try {
             String extension = getExtensions(Objects.requireNonNull(file.getOriginalFilename()));
             byte[] data = file.getBytes();
             String fileName = UUID.randomUUID() + "." + extension;
-            Path pathToAvatar = pathToAvatarsDir.resolve(fileName);
+            Path pathToAvatar = Path.of(fullAvatarPath, fileName);
             writeToFile(pathToAvatar, data);
 
             String avatar = userDto.getImage();
-
             if (avatar != null) {
-                Files.delete(Path.of(avatar));
+                Path path = Path.of(avatar.substring(1));
+                Files.delete(path);
             }
 
             repository
                     .findById(userDto.getId())
                     .map(user -> {
-                        user.setImage(pathToAvatar.toString());
+                        user.setImage(fileName);
                         return mapper.toDto(repository.save(user));
                     });
+
+            return fileName;
         } catch (IOException e) {
             throw new UserAvatarProcessingException();
         }

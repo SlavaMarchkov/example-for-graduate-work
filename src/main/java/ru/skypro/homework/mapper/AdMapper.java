@@ -1,8 +1,9 @@
 package ru.skypro.homework.mapper;
 
-import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.skypro.homework.dto.AdDto;
 import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.ExtendedAdDto;
@@ -14,10 +15,19 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-@AllArgsConstructor
 public class AdMapper {
 
     private final UserRepository userRepository;
+    private final String imagePath;
+
+    public AdMapper(final UserRepository userRepository,
+                    @Value("${path.to.images.folder}") String pathToImagesDir) {
+        this.userRepository = userRepository;
+        this.imagePath = UriComponentsBuilder.newInstance()
+                .path("/" + pathToImagesDir + "/")
+                .build()
+                .toUriString();
+    }
 
     public ExtendedAdDto toExtendedDto(@NonNull Ad ad) {
         ExtendedAdDto adDto = new ExtendedAdDto();
@@ -26,11 +36,13 @@ public class AdMapper {
         adDto.setTitle(ad.getTitle());
         adDto.setDescription(ad.getDescription());
         adDto.setPrice(ad.getPrice());
-        adDto.setImage(ad.getImage());
         adDto.setAuthorFirstName(ad.getAuthor().getFirstName());
         adDto.setAuthorLastName(ad.getAuthor().getLastName());
         adDto.setEmail(ad.getAuthor().getEmail());
         adDto.setPhone(ad.getAuthor().getPhone());
+
+        Optional.ofNullable(ad.getImage())
+                .ifPresent(elem -> adDto.setImage(imagePath + ad.getImage()));
 
         return adDto;
     }
@@ -41,8 +53,10 @@ public class AdMapper {
         adDto.setPk(ad.getPk());
         adDto.setTitle(ad.getTitle());
         adDto.setPrice(ad.getPrice());
-        adDto.setImage(ad.getImage());
         adDto.setAuthor(ad.getAuthor().getId());
+
+        Optional.ofNullable(ad.getImage())
+                .ifPresent(elem -> adDto.setImage(imagePath + ad.getImage()));
 
         return adDto;
     }
