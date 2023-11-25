@@ -1,8 +1,5 @@
 package ru.skypro.homework.controller;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +13,6 @@ import ru.skypro.homework.service.AdService;
 import ru.skypro.homework.service.impl.AdServiceImpl;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * Контроллер для обработки запросов для объявлений
@@ -27,13 +22,9 @@ import java.nio.file.Paths;
 @CrossOrigin(value = "http://localhost:3000")
 public class AdController {
     private final AdService service;
-    private final String imagePath;
 
-    public AdController(final AdService service,
-                        @Value("${path.to.images.folder}") String imagesDir,
-                        @Value("${directory.separator}") String directorySeparator) {
+    public AdController(final AdService service) {
         this.service = service;
-        this.imagePath = imagesDir + directorySeparator;
     }
 
     /**
@@ -136,16 +127,19 @@ public class AdController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_OCTET_STREAM_VALUE
     )
-    public ResponseEntity<Resource> updateImageByAdId(@PathVariable(value = "id") Integer id,
+    public ResponseEntity<byte[]> updateImageByAdId(@PathVariable(value = "id") Integer id,
                                                       @RequestPart(name = "image") MultipartFile file) throws IOException {
         AdDto adDto = service.findAdById(id);
         if (adDto == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } else {
             String fileName = service.updateImage(id, file);
-            return (fileName != null)
-                    ? ResponseEntity.ok().body(new ByteArrayResource(Files.readAllBytes(Paths.get(imagePath + fileName))))
-                    : ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            if (fileName != null) {
+                byte[] image = service.getImage(fileName);
+                return ResponseEntity.ok().body(image);
+            } else {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
         }
     }
 

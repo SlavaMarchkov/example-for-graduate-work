@@ -32,5 +32,5 @@ public interface AdService {
 
     String updateImage(Integer id, MultipartFile file);
 
-    byte[] getImage(String image) throws IOException;
+    byte[] getImage(String fileName) throws IOException;
 }

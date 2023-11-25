@@ -21,15 +21,15 @@ public class ImageController {
         this.adService = adService;
     }
 
-    @GetMapping(value = "/{image}", produces = {
+    @GetMapping(value = "/{fileName}", produces = {
             MediaType.IMAGE_PNG_VALUE,
             MediaType.IMAGE_JPEG_VALUE,
             MediaType.IMAGE_GIF_VALUE,
             "image/*"
     })
-    public ResponseEntity<byte[]> getImage(@PathVariable(value = "image") final String image) throws IOException {
-        byte[] imageResource = adService.getImage(image);
-        return ResponseEntity.ok().body(imageResource);
+    public ResponseEntity<byte[]> getImage(@PathVariable(value = "fileName") final String fileName) throws IOException {
+        byte[] image = adService.getImage(fileName);
+        return ResponseEntity.ok().body(image);
     }
 
 }

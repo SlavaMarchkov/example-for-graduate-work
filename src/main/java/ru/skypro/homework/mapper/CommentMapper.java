@@ -3,6 +3,7 @@ package ru.skypro.homework.mapper;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.skypro.homework.dto.CommentDto;
 import ru.skypro.homework.dto.CommentsDto;
 import ru.skypro.homework.entity.Comment;
@@ -16,10 +17,12 @@ public class CommentMapper {
 
     private final String fullAvatarPath;
 
-    public CommentMapper(@Value("${path.to.avatars.folder}") String pathToAvatarsDir,
-                      @Value("${directory.separator}") String directorySeparator) {
+    public CommentMapper(@Value("${path.to.avatars.folder}") String pathToAvatarsDir) {
         Path pathToAvatars = Path.of(pathToAvatarsDir);
-        this.fullAvatarPath = directorySeparator + pathToAvatars + directorySeparator;
+        this.fullAvatarPath = UriComponentsBuilder.newInstance()
+                .path("/" + pathToAvatarsDir + "/")
+                .build()
+                .toUriString();
     }
 
     public CommentDto toDto(@NonNull Comment comment) {

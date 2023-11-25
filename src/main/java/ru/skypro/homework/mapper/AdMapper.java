@@ -3,6 +3,7 @@ package ru.skypro.homework.mapper;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.skypro.homework.dto.AdDto;
 import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.ExtendedAdDto;
@@ -10,7 +11,6 @@ import ru.skypro.homework.entity.Ad;
 import ru.skypro.homework.exception.UserNotFoundException;
 import ru.skypro.homework.repository.UserRepository;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,11 +21,12 @@ public class AdMapper {
     private final String imagePath;
 
     public AdMapper(final UserRepository userRepository,
-                    @Value("${path.to.images.folder}") String pathToImagesDir,
-                    @Value("${directory.separator}") String directorySeparator) {
+                    @Value("${path.to.images.folder}") String pathToImagesDir) {
         this.userRepository = userRepository;
-        Path pathToImages = Path.of(pathToImagesDir);
-        this.imagePath = directorySeparator + pathToImages + directorySeparator;
+        this.imagePath = UriComponentsBuilder.newInstance()
+                .path("/" + pathToImagesDir + "/")
+                .build()
+                .toUriString();
     }
 
     public ExtendedAdDto toExtendedDto(@NonNull Ad ad) {

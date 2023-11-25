@@ -3,11 +3,11 @@ package ru.skypro.homework.mapper;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.skypro.homework.dto.UserDto;
 import ru.skypro.homework.dto.UserPrincipalDto;
 import ru.skypro.homework.entity.User;
 
-import java.nio.file.Path;
 import java.util.Optional;
 
 @Component
@@ -15,10 +15,11 @@ public class UserMapper {
 
     private final String fullAvatarPath;
 
-    public UserMapper(@Value("${path.to.avatars.folder}") String pathToAvatarsDir,
-                      @Value("${directory.separator}") String directorySeparator) {
-        Path pathToAvatars = Path.of(pathToAvatarsDir);
-        this.fullAvatarPath = directorySeparator + pathToAvatars + directorySeparator;
+    public UserMapper(@Value("${path.to.avatars.folder}") String pathToAvatarsDir) {
+        this.fullAvatarPath = UriComponentsBuilder.newInstance()
+                .path("/" + pathToAvatarsDir + "/")
+                .build()
+                .toUriString();
     }
 
     public UserDto toDto(@NonNull User user) {
