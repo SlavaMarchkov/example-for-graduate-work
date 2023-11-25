@@ -28,6 +28,9 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Сервис для работы с объявлениями
+ */
 @Service
 public class AdServiceImpl implements AdService {
 
@@ -52,6 +55,12 @@ public class AdServiceImpl implements AdService {
                 .toUriString();
     }
 
+    /**
+     * Метод, который вытаскивает авторизованного пользователя.
+     * <br><br> Используется объект SecurityContextHolder.
+     * <br> В нем мы храним информацию о текущем контексте безопасности приложения, который включает в себя подробную информацию о пользователе работающем в настоящее время с приложением.
+     * @return возвращает пользователя
+     */
     @Override
     public User getCurrentUser() {
         Authentication authenticationUser = SecurityContextHolder.getContext().getAuthentication();
@@ -59,6 +68,13 @@ public class AdServiceImpl implements AdService {
         return userRepository.findByEmail(principalUser.getUsername());
     }
 
+    /**
+     * Метод, который создает новое объявление.
+     * <br><br> Используется метод сервиса {@link AdServiceImpl#updateImage}
+     * @param ad     Объект пользователя
+     * @param file   фотография прикрепляемая к объявлению
+     * @return AdDto – объект объявления
+     */
     @Override
     public AdDto create(CreateOrUpdateAdDto ad, MultipartFile file) {
         Ad entity = new Ad();
@@ -75,6 +91,11 @@ public class AdServiceImpl implements AdService {
         return mapper.toDto(entity);
     }
 
+    /**
+     * Метод, который выводит объявление по индефикатору
+     * @param id             идентификатор объявления
+     * @return ExtendedAdDto – расширенный объект объявления
+     */
     @Override
     public ExtendedAdDto get(Integer id) {
         return adRepository
@@ -83,6 +104,10 @@ public class AdServiceImpl implements AdService {
                 .orElse(null);
     }
 
+    /**
+     * Метод, который выводит все объявления
+     * @return возвращает List объявлений
+     */
     @Override
     public AdsDto getAll() {
         return mapper.toAdsDto(
@@ -96,6 +121,11 @@ public class AdServiceImpl implements AdService {
                         .collect(Collectors.toList()));
     }
 
+    /**
+     * Метод, который выводит объявления авторизованного пользователя.
+     * <br><br> Используется метод сервиса {@link AdServiceImpl#getCurrentUser()}
+     * @return возвращает List объявлений
+     */
     @Override
     public AdsDto getAuthorizedUserAds() {
         User user = this.getCurrentUser();
@@ -111,6 +141,13 @@ public class AdServiceImpl implements AdService {
                         .collect(Collectors.toList()));
     }
 
+    /**
+     * Метод, который обновляет данные объявления в базе данных.
+     * <br><br> Используются методы {@link AdServiceImpl#findAdById}, {@link AdServiceImpl#adBelongsToCurrentUserOrIsAdmin}
+     * @param id идентификатор объявления
+     * @param ad объект пользователя
+     * @return AdDto – объект объявления
+     */
     @Override
     public AdDto update(Integer id, CreateOrUpdateAdDto ad) {
         AdDto adDto = findAdById(id);
@@ -128,6 +165,11 @@ public class AdServiceImpl implements AdService {
         return null;
     }
 
+    /**
+     * Метод, который удаляет объявление
+     * <br><br> Используются методы {@link AdServiceImpl#adBelongsToCurrentUserOrIsAdmin}, {@link CommentRepository#findCommentsByAd_Pk}
+     * @param adDto – объект объявления
+     */
     @Override
     public boolean delete(AdDto adDto) {
         if (adBelongsToCurrentUserOrIsAdmin(adDto)) {
@@ -152,6 +194,11 @@ public class AdServiceImpl implements AdService {
         return false;
     }
 
+    /**
+     * Метод, который находит объявление по идентификатору
+     * @param id идентификатор объявления
+     * @return AdDto – объект объявления
+     */
     @Override
     public AdDto findAdById(Integer id) {
         return adRepository
@@ -160,6 +207,12 @@ public class AdServiceImpl implements AdService {
                 .orElse(null);
     }
 
+    /**
+     * Метод, который выводит фотографии
+     * @param image название файла изображения
+     * @return массив байтов
+     * @throws IOException
+     */
     @Override
     public byte[] getImage(final String fileName) throws IOException {
         Path path = Path.of(pathToImagesDir, fileName);
@@ -168,6 +221,13 @@ public class AdServiceImpl implements AdService {
         ).getByteArray();
     }
 
+    /**
+     * Метод, который обновляет фотографии по идентификатору объявления.
+     * <br>Используются методы {@link AdServiceImpl#getExtensions}, {@link AdServiceImpl#writeToFile}, {@link AdServiceImpl#adBelongsToCurrentUserOrIsAdmin}
+     * @param id   идентификатор объявления
+     * @param file изображение для загрузки
+     * @return String – название файла изображения
+     */
     @Override
     public String updateImage(final Integer id, final MultipartFile file) {
         AdDto adDto = findAdById(id);
@@ -199,6 +259,9 @@ public class AdServiceImpl implements AdService {
         return null;
     }
 
+    /**
+     * Приватный метод, который записывает переданный файл в папку на диске
+     */
     private void writeToFile(Path path, byte[] data) {
         try (FileOutputStream fos = new FileOutputStream(path.toFile())) {
             fos.write(data);
@@ -207,10 +270,18 @@ public class AdServiceImpl implements AdService {
         }
     }
 
+    /**
+     * Приватный метод, который получает расширение загруженного файла
+     * @param fileName имя файла
+     */
     private String getExtensions(String fileName) {
         return fileName.substring(fileName.lastIndexOf(".") + 1);
     }
 
+    /**
+     * Приветный метод, который проверяет что комментарий редактирует пользователь создавший его или администратор.
+     * @param adDto объект объявления
+     */
     private boolean adBelongsToCurrentUserOrIsAdmin(AdDto adDto) {
         User user = this.getCurrentUser();
         boolean isAdmin = user.getRole().equals(Role.ADMIN);

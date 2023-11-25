@@ -38,7 +38,8 @@ public class CommentServiceImpl implements CommentService {
 
     /**
      * Приватный метод, который вытаскивает авторизованного пользователя
-     *
+     *<br><br> Используется объект SecurityContextHolder.
+     *<br> В нем мы храним информацию о текущем контексте безопасности приложения, который включает в себя подробную информацию о пользователе работающем в настоящее время с приложением.
      * @return возвращает пользователя
      */
     private User getCurrentUser() {
@@ -50,7 +51,7 @@ public class CommentServiceImpl implements CommentService {
     /**
      * Метод, который выводит все комментарии к определенному объявлению
      *
-     * @param adId (id объявления)
+     * @param adId id объявления
      * @return возвращает List комментариев
      */
     @Override
@@ -69,9 +70,9 @@ public class CommentServiceImpl implements CommentService {
     /**
      * Метод, который добавляет комментарий к определенному объявлению
      *
-     * @param adId        (id объявления)
-     * @param commentText (текст комментария)
-     * @return CommentDto (объект комментария)
+     * @param adId        id объявления
+     * @param commentText текст комментария
+     * @return CommentDto – объект комментария
      */
     @Override
     public CommentDto addComment(Integer adId, CreateOrUpdateCommentDto commentText) {
@@ -87,9 +88,9 @@ public class CommentServiceImpl implements CommentService {
 
     /**
      * Метод, который удаляет комментарий
-     *
-     * @param adId      (id объявления)
-     * @param commentId (id комментария)
+     * <br> Используются методы сервиса {@link CommentServiceImpl#findCommentByAdIdAndCommentId}, {@link CommentServiceImpl#commentBelongsToCurrentUserOrIsAdmin}
+     * @param adId      id объявления
+     * @param commentId id комментария
      */
     @Override
     @Transactional
@@ -103,12 +104,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
     /**
-     * Метод, который изменяет текст комментария
-     *
-     * @param adId      (id объявления)
-     * @param commentId (id комментария)
-     * @param comment   (текст комментария)
-     * @return CommentDto (объект комментария)
+     * Метод, который изменяет текст комментария.
+     * <br> Используются методы сервиса {@link CommentServiceImpl#findCommentByAdIdAndCommentId}, {@link CommentServiceImpl#commentBelongsToCurrentUserOrIsAdmin}
+     * @param commentId id комментария
+     * @param comment   текст комментария
+     * @return CommentDto – объект комментария
      */
     @Override
     public CommentDto updateComment(Integer adId,
@@ -128,6 +128,12 @@ public class CommentServiceImpl implements CommentService {
         return null;
     }
 
+    /**
+     * Метод, который находит комментарий по идентификаторам объявления и комментария
+     * @param adId      идентификатор объявления
+     * @param commentId идентификатор комментария
+     * @return CommentDto – объект комментария
+     */
     @Override
     public CommentDto findCommentByAdIdAndCommentId(final Integer adId, final Integer commentId) {
         return commentRepository
@@ -136,6 +142,11 @@ public class CommentServiceImpl implements CommentService {
                 .orElse(null);
     }
 
+    /**
+     * Приветный метод, который проверяет что комментарий редактирует пользователь создавший его или администратор.
+     * <br>Используется метод сервиса {@link CommentServiceImpl#getCurrentUser}
+     * @param commentDto объект комментария
+     */
     private boolean commentBelongsToCurrentUserOrIsAdmin(CommentDto commentDto) {
         User user = getCurrentUser();
         boolean isAdmin = user.getRole().equals(Role.ADMIN);

@@ -6,6 +6,9 @@ import ru.skypro.homework.dto.UserDto;
 
 import java.io.IOException;
 
+/**
+ * Интерфейс для работы с пользователями
+ */
 public interface UserService {
     UserDto getAuthenticatedUser();
 

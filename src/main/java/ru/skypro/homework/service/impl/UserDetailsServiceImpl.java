@@ -10,6 +10,9 @@ import ru.skypro.homework.entity.UserPrincipal;
 import ru.skypro.homework.mapper.UserMapper;
 import ru.skypro.homework.repository.UserRepository;
 
+/**
+ * Сервис для получения данный текущего пользователя
+ */
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
@@ -21,6 +24,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.userMapper = userMapper;
     }
 
+    /**
+     * Метод, который получает текущего пользователя из базы данных
+     * @param username
+     * @return объект с данными аутентифицированного пользователя
+     * @throws UsernameNotFoundException
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(username);
