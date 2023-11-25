@@ -7,6 +7,9 @@ import ru.skypro.homework.service.UserService;
 
 import java.io.IOException;
 
+/**
+ * Контроллер для обработки запросов для аватарок пользователей
+ */
 @RestController
 @RequestMapping(path = "/avatars")
 @CrossOrigin(value = "http://localhost:3000")

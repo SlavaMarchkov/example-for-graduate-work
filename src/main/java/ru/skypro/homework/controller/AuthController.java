@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.skypro.homework.dto.Login;
 import ru.skypro.homework.service.AuthService;
 
+/**
+ * Контроллер для обработки запросов для авторизации
+ */
 @Slf4j
 @CrossOrigin(value = "http://localhost:3000")
 @RestController

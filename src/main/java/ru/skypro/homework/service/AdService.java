@@ -6,9 +6,13 @@ import ru.skypro.homework.dto.AdsDto;
 import ru.skypro.homework.dto.CreateOrUpdateAdDto;
 import ru.skypro.homework.dto.ExtendedAdDto;
 import ru.skypro.homework.entity.User;
+import ru.skypro.homework.service.impl.AdServiceImpl;
 
 import java.io.IOException;
 
+/**
+ * Интерфейс для работы с объявлениями
+ */
 public interface AdService {
     User getCurrentUser();
 
